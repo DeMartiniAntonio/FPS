@@ -10,8 +10,8 @@ public class Health : MonoBehaviour
 
     private void Start()
     {
-        currentHealth = playerMaxHealth;
-        maxHealth.fillAmount = 1f; 
+        currentHealth = playerMaxHealth-50;
+        maxHealth.fillAmount = (float)currentHealth / playerMaxHealth;  
     }
 
 
@@ -23,6 +23,15 @@ public class Health : MonoBehaviour
         {
             Die();
         }
+    }
+    internal void Heal(int healAmount)
+    {
+        currentHealth += healAmount;
+        if (currentHealth > playerMaxHealth)
+        {
+            currentHealth = playerMaxHealth;
+        }
+        maxHealth.fillAmount = (float)currentHealth / playerMaxHealth;
     }
 
     private void Die()

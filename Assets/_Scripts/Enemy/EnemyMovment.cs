@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class EnemyMovment : MonoBehaviour
 {
-    [SerializeField] private float speed = 2f; 
+    public float speed = 2f; 
     private Transform target; 
     public void FolowPlayer(Transform playerPostion)
     {
@@ -14,5 +14,6 @@ public class EnemyMovment : MonoBehaviour
     {
        
         transform.position = Vector3.MoveTowards(transform.position, target.transform.position, speed* Time.deltaTime);
+        transform.LookAt(target);
     }
 }
