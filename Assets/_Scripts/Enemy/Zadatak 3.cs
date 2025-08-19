@@ -12,8 +12,6 @@ public class Zadatak3 : MonoBehaviour
     [SerializeField] private GameObject collectiblePrefab;
     [SerializeField] private TMP_Text scoreText;
 
-
-    private bool isGameOver = false;
     private void Start()
     {
         CreateColectables();

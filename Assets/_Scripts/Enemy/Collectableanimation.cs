@@ -29,22 +29,22 @@ public class Collectableanimation : MonoBehaviour
     }
     private void Update()
     {
-        
+
         transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime);
         timer += Time.deltaTime * bobbingSpeed;
         float t = Mathf.PingPong(timer, 1f);
         transform.position = Vector3.Lerp(startPosition, endPosition, t);
-        
+
     }
 
     private void OnTriggerStay(Collider other)
     {
-        isHealing=true;
+        isHealing = true;
         if (other.gameObject.TryGetComponent(out Health health))
         {
             if (Time.time >= nextHealTime)
             {
-                
+
                 if (currentHealPoints > 0)
                 {
                     health.Heal(healAmount);
