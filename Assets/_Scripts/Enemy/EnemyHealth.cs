@@ -4,6 +4,7 @@ using UnityEngine.UI;
 
 public class EnemyHealth : MonoBehaviour
 {
+
     [SerializeField] private int healthE = 100; // Initial health of the enemy
     private int currentHp;
     [SerializeField] private int damagePerHit = 20; // Damage taken per hit
@@ -27,8 +28,9 @@ public class EnemyHealth : MonoBehaviour
             if (currentHp <= 0)
             {
                 GameManager gameManager = FindObjectOfType<GameManager>();
+                ObjectPoolControler.Instance.ReturnToPool(gameObject); 
                 gameManager.Score(); 
-                Destroy(gameObject);
+                //Destroy(gameObject);
             }
         }
         EnemyMovment enemyMovment = gameObject.GetComponent<EnemyMovment>();

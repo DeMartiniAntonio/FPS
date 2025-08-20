@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -14,7 +15,7 @@ public enum FireMode
 public class Gun : MonoBehaviour
 {
     private FireMode fireMode = FireMode.SemiAuto;
-
+    public static Gun Instance { get; private set; }
     [SerializeField] private TMP_Text ammoText;
     [SerializeField] private Camera playerCamera;
     [SerializeField] private TMP_Text maxAmmoText;
@@ -32,17 +33,54 @@ public class Gun : MonoBehaviour
     [SerializeField] private int leftAmmoCount;
     [SerializeField] private int ammoToReload;
     private bool isReloading = false;
+    List<GameObject> pulledBullets = new();
+    List<GameObject> allPulledBullets = new();
+    [SerializeField] private int pullSize = 10;
+    private int bulletIndex = 0;
+    private void Awake()
+    {
+        Instance = this;
 
-
+    }
     //reload, scope, skins, firemode
     private void Start()
     {
+        InitializeBulletPool();
         ammoCount = maxAmmoCount; 
         ammoText.text = $"{ammoCount}/{maxAmmoCount}";
         maxAmmoText.text = $"{leftAmmoCount}/{allAmooCount}";
         leftAmmoCount = allAmooCount;
-        
     }
+
+    private void InitializeBulletPool()
+    {
+        for (int i = 0; i < maxAmmoCount; i++)
+        {
+            GameObject obj = Instantiate(bulletPrefab);
+            obj.SetActive(false);
+            pulledBullets.Add(obj);
+            allPulledBullets.Add(obj);
+        }
+    }
+
+    public void RemoveBulletsFromPool()
+    {
+        if (pulledBullets.Count == 0) return;
+        pulledBullets[0].SetActive(false);
+        pulledBullets.RemoveAt(0);
+    }
+
+    public void ReturnBulletsToPool(GameObject obj)
+    {
+        obj.SetActive(false);
+        pulledBullets.Add(obj);
+    }
+    public void ActivateBulet(GameObject obj)
+    {
+        obj.SetActive(true);
+        pulledBullets.Add(obj);
+    }
+
     private void Update()
     {
         //Shoot
@@ -107,18 +145,21 @@ public class Gun : MonoBehaviour
         isReloading = true;
         if (Time.time >= nextFireTime)
         {
+            
             nextFireTime = Time.time + 2f;
             Quaternion targetRotation = Quaternion.Euler(gun.transform.rotation.eulerAngles.x, gun.transform.rotation.eulerAngles.y - 60f, gun.transform.rotation.eulerAngles.z);
             gun.transform.rotation = Quaternion.Slerp(gun.transform.rotation, targetRotation, Time.deltaTime * 2f);
             yield return new WaitForSeconds(2f);
-
+            
             ammoCount = ammoToReload;
             ammoText.text = $"{ammoCount}/{maxAmmoCount}";
             targetRotation = Quaternion.Euler(gun.transform.rotation.eulerAngles.x, gun.transform.rotation.eulerAngles.y + 60f, gun.transform.rotation.eulerAngles.z);
             gun.transform.rotation = Quaternion.Slerp(gun.transform.rotation, targetRotation, Time.deltaTime * 2f);
+            bulletIndex = 0;
         }
-        isReloading = false;
 
+        isReloading = false;
+        
     }
 
     private IEnumerator SetZoom(float start, float end) {
@@ -144,19 +185,18 @@ public class Gun : MonoBehaviour
                 FireBullet(0.1f);
                 break;
             case FireMode.Burst:
-                StartCoroutine(FireBurst());
+                //StartCoroutine(FireBurst());
 
                 break;
                 
         }
     }
-
+    /*
     private IEnumerator FireBurst()
     {
         if (Time.time >= nextFireTime)
         {
             nextFireTime = Time.time + 0.9f;
-            GameObject createBullet = Instantiate(bulletPrefab, muzzle.position, muzzle.rotation);
             Rigidbody bulletRb = createBullet.GetComponent<Rigidbody>();
             bulletRb.linearVelocity = muzzle.forward * 100f;
             ammoCount--;
@@ -175,16 +215,21 @@ public class Gun : MonoBehaviour
             ammoText.text = $"{ammoCount}/{maxAmmoCount}";
             yield return new WaitForSeconds(0.7f);
         }
-    }
+    }*/
 
     private void FireBullet(float fireRateForEnum)
     {
         if (Time.time >= nextFireTime) {
-            GameObject createBullet = Instantiate(bulletPrefab, muzzle.position, muzzle.rotation);
-            Rigidbody bulletRb = createBullet.GetComponent<Rigidbody>();
+            
+            Debug.Log(bulletIndex);
+            ActivateBulet(pulledBullets[bulletIndex]);
+            pulledBullets[bulletIndex].transform.position = muzzle.position;
+            pulledBullets[bulletIndex].transform.rotation = muzzle.rotation;
+            Rigidbody bulletRb = pulledBullets[bulletIndex].GetComponent<Rigidbody>();
             bulletRb.linearVelocity = muzzle.forward * 100f;
             nextFireTime = Time.time + fireRateForEnum;
             ammoCount--;
+            bulletIndex++;
             ammoText.text = $"{ammoCount}/{maxAmmoCount}";
         }
     }
